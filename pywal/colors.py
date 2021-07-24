@@ -7,8 +7,7 @@ import random
 import re
 import sys
 
-from . import theme
-from . import util
+from . import theme, util
 from .settings import CACHE_DIR, MODULE_DIR, __cache_version__
 
 
@@ -148,7 +147,7 @@ def palette():
     print("\n")
 
 
-def get(img, light=False, nine=False, backend="wal", cache_dir=CACHE_DIR, sat=""):
+def get(img, light=False, nine=False, backend="wal", solarize_bg=False, cache_dir=CACHE_DIR, sat=""):
     """Generate a palette."""
     # home_dylan_img_jpg_backend_1.2.2.json
     cache_name = cache_fname(img, backend, nine, light, cache_dir, sat)
@@ -174,6 +173,8 @@ def get(img, light=False, nine=False, backend="wal", cache_dir=CACHE_DIR, sat=""
         logging.info("Using %s backend.", backend)
         backend = sys.modules["pywal.backends.%s" % backend]
         colors = getattr(backend, "get")(img, light, nine)
+        if solarize_bg: 
+            colors = _solarize_bg(colors)
         colors = colors_to_dict(saturate_colors(colors, sat), img)
 
         util.save_file_json(colors, cache_file)
@@ -185,3 +186,11 @@ def get(img, light=False, nine=False, backend="wal", cache_dir=CACHE_DIR, sat=""
 def file(input_file):
     """Deprecated: symbolic link to --> theme.file"""
     return theme.file(input_file)
+
+
+def _solarize_bg(colors):
+   print(f"BG dark: {colors[0]} light: {colors[8]} \n")
+   # colors[0] = util.set_lightness(colors[0], .11)
+   # colors[8] = util.set_lightness(colors[0], .14)
+   print(f"BG dark: {colors[0]} light: {colors[8]} \n")
+   return colors

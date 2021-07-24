@@ -5,8 +5,8 @@ import glob
 import logging
 import os
 
-from .settings import CACHE_DIR, OS
 from . import util
+from .settings import CACHE_DIR, OS
 
 
 def set_special(index, color, iterm_name="h", alpha=100):
@@ -34,6 +34,40 @@ def set_iterm_tab_color(color):
             "\033]6;1;bg;green;brightness;%s\a"
             "\033]6;1;bg;blue;brightness;%s\a") % (*util.hex_to_rgb(color),)
 
+
+def create_just_bg_sequences(colors, vte_fix=False):
+    """Create the escape sequences but only for background colors."""
+    alpha = colors["alpha"]
+
+    # Colors 0-15.
+    sequences = [set_color(index, colors["colors"]["color%s" % index])
+                 for index in [0, 8]]
+
+    # Special colors.
+    # Source: https://goo.gl/KcoQgP
+    # 10 = foreground, 11 = background, 12 = cursor foreground
+    # 13 = mouse foreground, 708 = background border color.
+    sequences.extend([
+        # set_special(10, colors["special"]["foreground"], "g"),
+        set_special(11, colors["special"]["background"], "h", alpha),
+        # set_special(12, colors["special"]["cursor"], "l"),
+        # set_special(13, colors["special"]["foreground"], "j"),
+        # set_special(17, colors["special"]["foreground"], "k"),
+        set_special(19, colors["special"]["background"], "m"),
+        set_color(232, colors["special"]["background"]),
+        # set_color(256, colors["special"]["foreground"]),
+        set_color(257, colors["special"]["background"]),
+    ])
+
+    if not vte_fix:
+        sequences.extend(
+            set_special(708, colors["special"]["background"], "", alpha)
+        )
+
+    if OS == "Darwin":
+        sequences += set_iterm_tab_color(colors["special"]["background"])
+
+    return "".join(sequences)
 
 def create_sequences(colors, vte_fix=False):
     """Create the escape sequences."""
@@ -70,7 +104,7 @@ def create_sequences(colors, vte_fix=False):
     return "".join(sequences)
 
 
-def send(colors, cache_dir=CACHE_DIR, to_send=True, vte_fix=False):
+def send(colors, cache_dir=CACHE_DIR, to_send=True, vte_fix=False, just_bg=False):
     """Send colors to all open terminals."""
     if OS == "Darwin":
         tty_pattern = "/dev/ttys00[0-9]*"
@@ -78,6 +112,7 @@ def send(colors, cache_dir=CACHE_DIR, to_send=True, vte_fix=False):
     else:
         tty_pattern = "/dev/pts/[0-9]*"
 
+    _create_sequences = create_just_bg_sequences if just_bg else create_sequences
     sequences = create_sequences(colors, vte_fix)
 
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.
@@ -86,4 +121,4 @@ def send(colors, cache_dir=CACHE_DIR, to_send=True, vte_fix=False):
             util.save_file(sequences, term)
 
     util.save_file(sequences, os.path.join(cache_dir, "sequences"))
-    logging.info("Set terminal colors.")
+    logging.info(f"Set terminal {'backgrounds' if just_bg else 'colors'}.")

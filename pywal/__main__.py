@@ -15,15 +15,8 @@ import os
 import shutil
 import sys
 
-from .settings import __version__, CACHE_DIR, CONF_DIR
-from . import colors
-from . import export
-from . import image
-from . import reload
-from . import sequences
-from . import theme
-from . import util
-from . import wallpaper
+from . import colors, export, image, reload, sequences, theme, util, wallpaper
+from .settings import CACHE_DIR, CONF_DIR, __version__
 
 
 def get_args():
@@ -55,6 +48,10 @@ def get_args():
 
     arg.add_argument("--nine", action="store_true",
                      help="Use 9 color output. ")
+
+    arg.add_argument("--just-solarish-bg", action="store_true",
+                     help="Just apply black and brblack backgrounds "
+                          "modified with solarized HSL lightness.")
 
     arg.add_argument("--recursive", action="store_true",
                      help="When pywal is given a directory as input and this "
@@ -179,7 +176,8 @@ def parse_args(parser):
         image_file = image.get(args.i, iterative=args.iterative,
                                recursive=args.recursive)
         colors_plain = colors.get(image_file, args.l, args.nine, args.backend,
-                                  sat=args.saturate)
+                                  sat=args.saturate,
+                                  solarize_bg=args.just_solarish_bg)
 
     if args.theme:
         colors_plain = theme.file(args.theme, args.l)
@@ -190,7 +188,8 @@ def parse_args(parser):
     if args.w:
         cached_wallpaper = util.read_file(os.path.join(CACHE_DIR, "wal"))
         colors_plain = colors.get(cached_wallpaper[0], args.l, args.nine, args.backend,
-                                  sat=args.saturate)
+                                  sat=args.saturate,
+                                  solarize_bg=args.just_solarish_bg)
 
     if args.b:
         args.b = "#%s" % (args.b.strip("#"))
@@ -203,12 +202,18 @@ def parse_args(parser):
     if args.p:
         theme.save(colors_plain, args.p, args.l)
 
-    sequences.send(colors_plain, to_send=not args.s, vte_fix=args.vte)
+    sequences.send(colors_plain, to_send=not args.s, vte_fix=args.vte, just_bg=args.just_solarish_bg)
 
-    if sys.stdout.isatty():
+    if not args.just_solarish_bg and sys.stdout.isatty():
         colors.palette()
+    colors.palette()
 
     export.every(colors_plain)
+
+   #if args.just_solarish_bg:
+   #    pass
+   #else:
+   #    export.every(colors_plain)
 
     if not args.e:
         reload.env(tty_reload=not args.t)
