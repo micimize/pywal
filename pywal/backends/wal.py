@@ -7,8 +7,7 @@ import shutil
 import subprocess
 import sys
 
-from .. import colors
-from .. import util
+from .. import colors, util
 
 
 def imagemagick(color_count, img, magick_command):
@@ -40,6 +39,10 @@ def gen_colors(img):
 
     for i in range(0, 20, 1):
         raw_colors = imagemagick(16 + i, img, magick_command)
+        print('\n'.join([
+            '<div style="width: 50px; height: 50px; display: inline-block; background-color: ' + c + '"></div>' for c in  
+            [re.search("#.{6}", str(col)).group(0) for col in raw_colors[1:]]
+            ]))
 
         if len(raw_colors) > 16:
             break

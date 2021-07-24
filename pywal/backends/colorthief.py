@@ -12,18 +12,20 @@ except ImportError:
     logging.error("Try another backend. (wal --backend)")
     sys.exit(1)
 
-from .. import colors
-from .. import util
+from .. import colors, util
 
+
+def get_palette(img, color_count, quality=10):
+    raw_colors =  ColorThief(img).get_palette(color_count=color_count, quality=quality)
+    return [util.rgb_to_hex(color) for color in raw_colors]
 
 def gen_colors(img):
     """Loop until 16 colors are generated."""
-    color_cmd = ColorThief(img).get_palette
 
     for i in range(0, 10, 1):
-        raw_colors = color_cmd(color_count=8 + i)
+        colors = get_palette(color_count=8 + i)
 
-        if len(raw_colors) >= 8:
+        if len(colors) >= 8:
             break
 
         if i == 10:
@@ -34,7 +36,7 @@ def gen_colors(img):
             logging.warning("ColorThief couldn't generate a palette.")
             logging.warning("Trying a larger palette size %s", 8 + i)
 
-    return [util.rgb_to_hex(color) for color in raw_colors]
+    return colors
 
 
 def adjust(cols, light, nine):

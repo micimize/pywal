@@ -198,6 +198,28 @@ def blend_color(color, color2):
 
     return rgb_to_hex((r3, g3, b3))
 
+def hex_to_hls(color):
+    r, g, b = [x / 255.0 for x in hex_to_rgb(color)]
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    return (h, l, s)
+
+def hls_to_hex(h, l, s):
+    r, g, b = colorsys.hls_to_rgb(h, l, s)
+    r, g, b = [x * 255.0 for x in (r, g, b)]
+    return rgb_to_hex((int(r), int(g), int(b)))
+
+def saturate_color(color, amount):
+    """Saturate a hex color."""
+    h, l, s = hex_to_hls(color)
+    s = amount
+    return hls_to_hex(h, l, s)
+
+def set_lightness(color, amount):
+    """Saturate a hex color."""
+    h, l, s = hex_to_hls(color)
+    l = amount
+    return hls_to_hex(h, l, s)
+
 
 def saturate_color(color, amount):
     """Saturate a hex color."""
