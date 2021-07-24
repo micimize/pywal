@@ -12,8 +12,7 @@ except ImportError:
     logging.error("Try another backend. (wal --backend)")
     sys.exit(1)
 
-from .. import colors
-from .. import util
+from .. import colors, util
 
 
 def gen_colors(img):

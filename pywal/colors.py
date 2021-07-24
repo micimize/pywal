@@ -65,7 +65,6 @@ def generic_adjust(colors, light, nine):
             colors[15] = colors[7]
 
         else:
-
             colors[0] = util.lighten_color(colors[0], 0.75)
             colors[7] = util.darken_color(colors[0], 0.50)
             colors[8] = util.darken_color(colors[0], 0.25)
@@ -189,8 +188,9 @@ def file(input_file):
 
 
 def _solarize_bg(colors):
-   print(f"BG dark: {colors[0]} light: {colors[8]} \n")
-   # colors[0] = util.set_lightness(colors[0], .11)
-   # colors[8] = util.set_lightness(colors[0], .14)
-   print(f"BG dark: {colors[0]} light: {colors[8]} \n")
-   return colors
+    l = util.set_lightness
+    max_s = util.ceil_saturation
+    colors[0] = max_s(l(colors[0], .11), 0.5)
+    colors[8] = max_s(l(colors[0], .14), 0.5)
+    print(f"BG dark: {colors[0]} light: {colors[8]} \n")
+    return colors

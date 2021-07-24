@@ -107,13 +107,13 @@ def create_sequences(colors, vte_fix=False):
 def send(colors, cache_dir=CACHE_DIR, to_send=True, vte_fix=False, just_bg=False):
     """Send colors to all open terminals."""
     if OS == "Darwin":
-        tty_pattern = "/dev/ttys00[0-9]*"
+        tty_pattern = "/dev/ttys0[0-9]*"
 
     else:
         tty_pattern = "/dev/pts/[0-9]*"
 
     _create_sequences = create_just_bg_sequences if just_bg else create_sequences
-    sequences = create_sequences(colors, vte_fix)
+    sequences = _create_sequences(colors, vte_fix)
 
     # Writing to "/dev/pts/[0-9] lets you send data to open terminals.
     if to_send:

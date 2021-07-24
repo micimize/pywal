@@ -215,9 +215,16 @@ def saturate_color(color, amount):
     return hls_to_hex(h, l, s)
 
 def set_lightness(color, amount):
-    """Saturate a hex color."""
+    """Set hls lightness of a hex color"""
     h, l, s = hex_to_hls(color)
     l = amount
+    return hls_to_hex(h, l, s)
+
+def ceil_saturation(color, amount):
+    """Bount hls saturation of a hex color"""
+    h, l, s = hex_to_hls(color)
+    if s > amount:
+        s = amount
     return hls_to_hex(h, l, s)
 
 
