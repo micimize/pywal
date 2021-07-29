@@ -8,6 +8,7 @@ import re
 import sys
 
 from . import theme, util
+from .backends.solarish import solarize_backgrounds, tweak_vscode
 from .settings import CACHE_DIR, MODULE_DIR, __cache_version__
 
 
@@ -173,7 +174,8 @@ def get(img, light=False, nine=False, backend="wal", solarize_bg=False, cache_di
         backend = sys.modules["pywal.backends.%s" % backend]
         colors = getattr(backend, "get")(img, light, nine)
         if solarize_bg: 
-            colors = _solarize_bg(colors)
+            colors = solarize_backgrounds(colors)
+            tweak_vscode(colors)
         colors = colors_to_dict(saturate_colors(colors, sat), img)
 
         util.save_file_json(colors, cache_file)
@@ -185,12 +187,3 @@ def get(img, light=False, nine=False, backend="wal", solarize_bg=False, cache_di
 def file(input_file):
     """Deprecated: symbolic link to --> theme.file"""
     return theme.file(input_file)
-
-
-def _solarize_bg(colors):
-    l = util.set_lightness
-    max_s = util.ceil_saturation
-    colors[0] = max_s(l(colors[0], .11), 0.5)
-    colors[8] = max_s(l(colors[0], .14), 0.5)
-    print(f"BG dark: {colors[0]} light: {colors[8]} \n")
-    return colors
